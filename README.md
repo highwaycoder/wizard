@@ -11,3 +11,7 @@ from modern IDEs.
 # WIDE
 Is the IDE based on Wizard/WizL.  Work will begin in earnest once the
 parser has reached an appropriate level of maturity.
+
+## Influences
+This project was in part influenced by the zen-coding HTML/CSS language
+and in part by an article describing the Ithkuil natural language.
