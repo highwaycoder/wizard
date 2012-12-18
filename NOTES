@@ -1,0 +1,128 @@
+ZenIDE is meant to take on the philosophical properties of Zen and bundle
+them into a language-agnostic IDE.
+
+The ideal command structure, therefore, would be language-agnostic
+but unfortunately I fear that is somewhat impossible.
+
+However, the basics can probably be covered pretty well, so here's an
+approximation of an early syntax:
+
+Command Mode:
+I: create new identifier and begin editing it in Token Mode
+i: create new primitive-type-qualified identifier, beginning in 
+   Primitive Type Input Mode and then switching to Token Mode when 
+   finished
+f: create new function (or method) definition and switch to Function Mode
+t: create new non-primitive type qualifier and begin editing it in Token 
+   Mode
+T: create new primitive type, switching to Primitive Type Input Mode
+=: insert assignment operator, stay in Command Mode when done
+ : ignored (see section on whitespace below)
+z: insert approximation of "zero" for current expression's return type
+   note that if the current expression's return type cannot be
+   determined, a literal "0" character will be inserted and you are
+   expected to deal with the consequences of this.
+N: start namespace block if appropriate
+n: reserved for future extension (Namespace Mode)
+M: "import" a namespace (in C++, 'using namespace')
+m: reserved for future extension (Namespace Mode)
+c: switch to Class Definition Mode
+C: switch to Class Implementation Mode
+\n: this command is complete.  If the output is missing a statement
+    sentinel character (eg ';'), one will be inserted.
+    This clears the current "expression information" state.
+;: see \n (it's an exact synonym)
+
+Primitive Type Input Mode:
+u: qualify as "unsigned" if possible
+s: qualify as "signed" if possible
+S: qualify as "static" if possible
+c: character datatype
+C: if possible and sensible, qualify as "const"
+w: if possible and sensible, qualify as "long"
+W: if possible and sensible, qualify as "short"
+i: insert integer data type qualifier and switch back to previous mode
+f: insert single-width floating-point datatype and switch back to 
+   previous mode
+d: if possible, insert double-width floating-point datatype
+   otherwise insert single-width floating-point data type
+   in both cases switch back to previous mode
+p: if possible, qualify type as a pointer.  Note that despite C and C++
+   and other languages placing the * after the type-qualifier, the 'p'
+   command MUST come BEFORE the type-qualifier.  The output will be
+   correct, nevertheless.
+
+Token Mode:
+=: insert assignment operator and switch to Command Mode
++: insert addition operator and switch to Command Mode
+-: insert subtraction (or negation) operator and switch to Command Mode
+/: insert division operator and switch to Command Mode
+\: insert what would otherwise be a command and stay in Token Mode
+   a literal \ can be inserted using \\
+!: insert unary boolean negation operator and switch to Command Mode
+;: insert statement sentinel character (semi-colon in most languages)
+   and switch to Command Mode
+ : switch back to Command Mode (does not insert whitespace, 
+   see section on whitespace below)
+ESC: switch directly to Command Mode
+
+Function Mode:
+R: Define the return type of the function (if applicable) and switch
+   to Token Mode to input the type name
+r: Define the return type of the function and switch to Primitive Type
+   Mode
+P: define a parameter of the function and switch to Token Mode to input
+   the type name
+p: define a parameter of the function and switch to Primitive Type Mode
+N: add a namespace to the function identifier, switch to Token Mode
+   for inputting the namespace
+n: reserved for a possible future extension (Namespace Mode)
+
+Class Definition Mode:
+{: ignored
+}: finish Class Definition
+
+Examples:
+	Example 1: unsigned int
+		Both
+			iuitotal=z
+		and
+			iuitotal = z
+
+		Give the following output in C(++):
+			unsigned int total = 0;
+		And in Java:
+			int total = 0;
+
+	Example 2: Pointers
+		ipitotal=z
+
+	In C(++):
+		int* total = NULL;
+	In Java:
+		int total = 0;
+
+	Example 3: Namespaces
+		Mstd;Nfoo;frpip
+
+Pointers:
+Since some languages implement pointers and some don't, it's difficult
+for Zen to understand what you mean when you ask for a pointer and are 
+working in a language that doesn't use pointers.  Zen will therefore
+completely ignore pointer-based commands in languages that don't use
+pointers, allowing you to write Java and C(++) compatible code with
+the same Zen code.
+Note well: This may cause some unexpected and bizarre results in Java,
+because you might think you're passing something by-reference when
+really you're passing by-value.
+
+Whitespace:
+Whitespace in Zen commands is (largely) ignored.  Generated code is
+impregnated with whitespace based on the rules of the current language
+and the settings of Zen.  You can configure Zen to use any coding style
+you want, as each individual insertion has its own rules on whitespace.
+
+Note on Type commands:
+All lowercase commands that influence Type assume you want to use a 
+primitive and switch to Primitive Type Mode.  All uppercase commands
+regarding type assume you're using a custom type.
