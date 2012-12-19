@@ -1,4 +1,5 @@
 #include "CParser.hpp"
+#include "ILanguage.hpp"
 #include <iostream>
 
 namespace wiz
@@ -181,14 +182,15 @@ namespace wiz
 				//if(language->allows_whitespace_in_identifiers) output_line << c;
 				break;
 			case '=':
-				output_line << " = ";
 				current_mode.push(SParserMode(current_mode.top().super_mode,EM_VALUE));
+				can_generate = false; // until we know we have an appropriate value
 				break;
 			case '\\':
 				current_mode.push(SParserMode(current_mode.top().super_mode,EM_ESCAPED_CHAR));
 				break;
 			default:
 				output_line << c;
+				can_generate = true; // at this stage there's no reason to believe we can't generate valid code
 				break;
 		}
 	}
@@ -201,25 +203,62 @@ namespace wiz
 	{
 		switch(c)
 		{
+			case 'n':
+			{
+				if(type_type != ETT_CUSTOM && !language->allow_new_primitives())
+				{
+					set_error("Warning: 'new' keyword inappropriate in this context.  Skipping.",false);
+					break;
+				}
+				output_line << language->get_operator("equals")
+				<< " "
+				<< language->new_keyword();
+				break;
+			}
 			case 'z':
+			{
 				switch(type_type)
 				{
 					case ETT_CUSTOM:
 					{
+						if(custom.pointer_qualifiers == 1)
+						{
+							output_line << language->new_instance(custom);
+						}
+						else if(custom.pointer_qualifiers == 0)
+						{
+							output_line << language->new_reference(custom);
+						}
+						else
+						{
+							output_line << language->get_operator("equals")
+							<< " "
+							<< language->get_null_value();
+						}
+						
 						break;
 					}
 					case ETT_PRIMITIVE:
 					{
 						if(primitive.pointer_qualifiers == 0)
-							output_line << language->get_zero_value(primitive);
+						{
+							output_line << language->get_operator("equals")
+							<< " "
+							<< language->get_zero_value(primitive);
+						}
 						else
-							output_line << language->get_null_value();
+						{
+							output_line << language->get_operator("equals")
+							<< " "
+							<< language->get_null_value();
+						}
 						break;
 					}
 					default:
 						break;
 				}
 				break;
+			}
 			case '\\':
 				current_mode.push(SParserMode(current_mode.top().super_mode,EM_ESCAPED_CHAR));
 				break;
@@ -230,6 +269,7 @@ namespace wiz
 				output_line << c;
 				break;
 		}
+		can_generate = true; // we can generate anything that has a value set
 	}
 	
 	void CParser::parse_char_esc(const char c)
@@ -262,6 +302,10 @@ namespace wiz
 		if(fatal_error)
 		{
 			rv = "";
+		}
+		else if(!can_generate)
+		{
+			std::cerr << "Incomplete command (perhaps you missed an identifier?)" << std::endl;
 		}
 		else
 		{

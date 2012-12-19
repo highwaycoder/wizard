@@ -23,7 +23,7 @@ namespace wiz
 	{
 		return "NULL";
 	}
-	std::string CCPPLanguage::get_zero_value(const SPrimitiveType type)
+	std::string CCPPLanguage::get_zero_value(const SPrimitiveType& type)
 	{
 		std::string rv;
 		switch(type.type)
@@ -52,7 +52,7 @@ namespace wiz
 		}
 		return rv;
 	}
-	std::string CCPPLanguage::type_name(const EPrimitiveType type)
+	std::string CCPPLanguage::type_name(const EPrimitiveType& type)
 	{
 		std::string rv;
 		switch(type)
@@ -115,6 +115,45 @@ namespace wiz
 		{
 			rv += '*';
 			local_count--;
+		}
+		return rv;
+	}
+	std::string CCPPLanguage::new_keyword(void)
+	{
+		return "new";
+	}
+	std::string CCPPLanguage::new_instance(const SCustomType& type,const std::vector<SParam>& parameters)
+	{
+		std::stringstream builder;
+		builder << " = " << new_keyword() << " " << type.name;
+		if(!parameters.empty())
+		{
+			builder << "(";
+			//! \todo parameter evaluation
+			builder << ")";
+		}
+		return builder.str();
+	}
+	std::string CCPPLanguage::new_reference(const SCustomType& type,const std::vector<SParam>& parameters)
+	{
+		if(parameters.empty()) return "";
+		std::stringstream builder;
+		builder << " = " << type.name << "(";
+		//! \todo parameter evaluation
+		builder << ")";
+		
+		return builder.str();
+	}
+	bool CCPPLanguage::allow_new_primitives(void)
+	{
+		return true;
+	}
+	std::string CCPPLanguage::get_operator(const std::string& type)
+	{
+		std::string rv;
+		if(type.compare("equals") == 0)
+		{
+			rv = "=";
 		}
 		return rv;
 	}

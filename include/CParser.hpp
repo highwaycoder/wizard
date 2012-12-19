@@ -5,6 +5,7 @@
 #include "SPrimitiveType.hpp"
 #include "SCustomType.hpp"
 #include "SContext.hpp"
+#include "ETypeType.hpp"
 #include <string>
 #include <map>
 #include <vector>
@@ -13,16 +14,10 @@
 
 namespace wiz
 {
-	enum ETypeType
-	{
-		ETT_CUSTOM,
-		ETT_PRIMITIVE,
-		ETT_SENTINEL
-	};
 	class CParser : public IParser
 	{
 	public:
-		CParser(ILanguage* lang) : has_error(false),fatal_error(false) { language = lang; current_mode.push(SParserMode(ESM_CREATE,EM_COMMAND)); }
+		CParser(ILanguage* lang) : has_error(false),fatal_error(false),can_generate(false) { language = lang; current_mode.push(SParserMode(ESM_CREATE,EM_COMMAND)); }
 		void parse(const std::string& command);
 		void parse_char(const char c);
 		std::string generate_code(void);
@@ -48,6 +43,8 @@ namespace wiz
 		std::string error_string;
 		bool has_error;
 		bool fatal_error;
+		
+		bool can_generate;
 		
 		SContext context;
 	
